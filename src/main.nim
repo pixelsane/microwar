@@ -10,14 +10,7 @@ const
   lerpSpeed = 0.2
   gridPxW = 32
   gridPxH = 32
-
-type 
-  Clickable* = object
-    x0*: float32
-    y0*: float32
-    x1*: float32
-    y1*: float32
-  
+ 
 var settings = Settings(
   showLoadout: false,
   loadoutX: 120,
@@ -29,11 +22,9 @@ proc updateLoadout =
     showButton = Clickable(
       x0: settings.loadoutX, y0: settings.loadoutY,
       x1: settings.loadoutX + 10, y1: settings.loadoutY + 18)
-    hovering = 
-      mx >= showButton.x0 and mx < showButton.x1 and
-      my >= showButton.y0 and my < showButton.y1
+    hovering = isOverlapping(mx, my, showButton)
 
-  if hovering and mousebtnp(0): settings.showLoadout = not settings.showLoadout
+  if hovering and mousebtnpr(0): settings.showLoadout = not settings.showLoadout
 
 proc gameInit() =
   setPalette (loadPaletteFromGPL "ayy4.gpl")
@@ -45,10 +36,6 @@ proc gameInit() =
   addUnit 1, 0
   addUnit 2, 1
   addUnit 3, 1
-  addUnit 4, 0
-  addUnit 5, 1
-  addUnit 6, 0
-  addUnit 7, 1
 
 proc drawGrid =
   setColor 4
@@ -86,6 +73,10 @@ proc drawScreen =
 
 proc gameUpdate(dt: float32) =
   updateLoadout()
+  let selected = selectedUnit()
+  if selected > -1:
+    settings.showLoadout = false
+    
 
 proc gameDraw() =
   cls()
