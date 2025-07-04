@@ -13,6 +13,37 @@ var settings = Settings(
   placingUnit: false,
   unitToPlace: -1)
 
+proc resetUnitEvents =
+  unselectUnit()
+  settings.unitToPlace = -1
+  settings.placingUnit = false
+
+# migrate these procs later to unit once we figure the import order
+proc placeUnit*() =
+  if settings.unitToPlace < 0: return
+  if settings.placingUnit and settings.loadoutX > 118 and mousebtnpr(0) and not(settings.showLoadout):
+    if occupant(settings.hoveringOnCell) > -1: return
+    
+    changeOccupantByIndex settings.unitToPlace, settings.hoveringOnCell
+    
+    resetUnitEvents()
+    settings.showLoadout = true
+
+proc drawGridUnits*() =
+  setSpritesheet 1
+  let grid = getGridMap()
+  for i in 0 ..< grid.len:
+    let occupantID = occupant(i)
+    if occupantID == EmptyID: continue
+    if not doesUnitExist(occupantID) or occupantID <= -1: continue
+    else:
+      let 
+        unit = unitByID(occupantID)
+        pos = cellClickable(i)  # Use i, not occupantID!
+      
+      spr unit.sprID, pos.x0, pos.y0
+
+
 proc updateLoadout =
   loadoutShowHide settings
   loadoutSelection settings
@@ -56,6 +87,7 @@ proc drawScreen =
   showMouse()
   drawBG()
   drawGrid()
+  drawGridUnits()
   drawLoadoutScreen settings
   drawLoadoutUnits settings
   drawUnitCursor settings
@@ -63,6 +95,7 @@ proc drawScreen =
 proc gameUpdate(dt: float32) =
   storeCellUnderMouse settings
   updateLoadout()
+  placeUnit()
 
 proc gameDraw() =
   cls()

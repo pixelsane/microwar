@@ -21,12 +21,19 @@ let unitTemplates* = @[
 var pool: Table[int32, Unit] = initTable[int32, Unit]()
 var loadoutOrder*: seq[int32] = @[]
 
-proc unitById*(id: int32): Unit = unitTemplates[id]
+proc doesUnitExist*(i: int32): bool = i in pool
 
-proc addUnit*(unitID: int32, templateID: int32) =
-  let newUnit = unitById(templateID)
+proc unitByTID*(tid: int32): Unit = unitTemplates[tid]
+
+proc unitByID*(id:int32) : Unit =
+  if id in pool: return pool[id]
+
+proc addUnit*(unitID: int32, templateID: int32, ownerID: int32 = 0) =
+  let newUnit = unitByTID(templateID)
   pool[unitID] = newUnit
-  loadoutOrder.add(unitID)
+  pool[unitID].ownerID = ownerID
+  if ownerID == 0:
+      loadoutOrder.add(unitID)
 
 proc removeUnit*(unitID: int32) =
   if unitID in pool:
@@ -36,11 +43,8 @@ proc damageUnit*(id: int32, amount: float32) =
   if id in pool:
     pool[id].health -= amount
 
-proc drawGridUnits*(settings: Settings) =
-  discard
-
 proc drawUnitCursor*(settings: Settings) =
-  if settings.unitToPlace notin pool: return
+  if not settings.placingUnit: return
   let
     cellTarget = cellClickable(cellUnderMouse())
     unit = pool[settings.unitToPlace]
@@ -57,29 +61,42 @@ proc drawLoadoutUnits*(settings: Settings) =
     offsetX = 7
     offsetY = -7
     maxPerRow = 7
+    (mx, my) = mouse()
 
-  let (mx, my) = mouse()
+  var displayIndex = 0  # Track position for display purposes
 
   for i, id in loadoutOrder:
     if id notin pool: continue
 
+    let unit = pool[id]
+
+    # Only show units owned by player (ownerID = 0)
+    if unit.ownerID != 0: continue
+
     let
-      unit = pool[id]
-      col = i mod maxPerRow
-      row = i div maxPerRow
+      col = displayIndex mod maxPerRow
+      row = displayIndex div maxPerRow
       x = offsetX + settings.loadoutX + (col * spacingX)
       y = offsetY + settings.loadoutY + (row * spacingY)
-      (mx, my) = mouse()
 
       button = Clickable(x0: x, y0: y, x1: x + 32, y1: y + 32)
       hovering = isOverlapping(mx, my, button)
 
     if hovering and mousebtnpr(0) and settings.loadoutX <= 1.0:
       for otherID in loadoutOrder:
+        if otherID notin pool: continue
         pool[otherID].selected = false
       pool[id].selected = true
 
     spr unit.sprID, x, y
+    displayIndex += 1  # Only increment for units that are actually displayed
+
+proc unselectUnit* =
+  for id, unit in pool:
+    if unit.selected:
+      pool[id].ownerID = -1
+      pool[id].selected = false
+
 
 proc selectedUnit*: int =
   for id, unit in pool:

@@ -47,6 +47,7 @@ proc getGridMap*(): var GridMap = gridMap
 proc prepareGridMap(kind: CellKind) =
   for i in 0..<MaxCells:
     gridMap[i].kind = kind
+    gridMap[i].occupant = EmptyID
 
 proc prepareGrid*(kind: CellKind) = 
   prepareGridMap(kind)
