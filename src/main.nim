@@ -1,10 +1,10 @@
 import nico
 import fixedGrid
-import unit
+import unit, settingsHandler
 
 const 
   orgName = "pixelsane"
-  appName = "mxn"
+  appName = "microwar"
 
 const 
   lerpSpeed = 0.2
@@ -12,11 +12,6 @@ const
   gridPxH = 32
 
 type 
-  Settings = object
-    showLoadout* : bool
-    loadoutX : float32
-    loadoutY : float32
-
   Clickable* = object
     x0*: float32
     y0*: float32
@@ -49,6 +44,11 @@ proc gameInit() =
   addUnit 0, 0
   addUnit 1, 0
   addUnit 2, 1
+  addUnit 3, 1
+  addUnit 4, 0
+  addUnit 5, 1
+  addUnit 6, 0
+  addUnit 7, 1
 
 proc drawGrid =
   setColor 4
@@ -82,6 +82,7 @@ proc drawScreen =
   drawBG()
   drawGrid()
   drawLoadoutScreen()
+  drawLoadoutUnits settings
 
 proc gameUpdate(dt: float32) =
   updateLoadout()
