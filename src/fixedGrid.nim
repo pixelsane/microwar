@@ -3,6 +3,8 @@ const
   GridWidth* = 4
   GridHeight* = 4
   MaxCells* = GridWidth * GridHeight
+  gridPxW* = 32
+  gridPxH* = 32
 
 # Add or remove types according to need
 type 

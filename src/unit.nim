@@ -28,9 +28,26 @@ proc addUnit*(unitID: int32, templateID: int32) =
   pool[unitID] = newUnit
   loadoutOrder.add(unitID)
 
+proc removeUnit*(unitID: int32) =
+  if unitID in pool:
+    pool.del unitID
+
 proc damageUnit*(id: int32, amount: float32) =
   if id in pool:
     pool[id].health -= amount
+
+proc drawGridUnits*(settings: Settings) =
+  discard
+
+proc drawUnitCursor*(settings: Settings) =
+  if settings.unitToPlace notin pool: return
+  let
+    cellTarget = cellClickable(cellUnderMouse())
+    unit = pool[settings.unitToPlace]
+    (mx, my) = mouse()
+
+  if isOverlapping(mx, my, cellTarget):
+    spr unit.sprID, cellTarget.x0, cellTarget.y0
 
 proc drawLoadoutUnits*(settings: Settings) =
   setSpritesheet 1
@@ -69,3 +86,18 @@ proc selectedUnit*: int =
     if unit.selected:
       return id
   return -1
+
+proc loadoutSelection*(settings: Settings) =
+  let selected = selectedUnit()
+  if selected > -1:
+    enableUnitPlacement settings, selected
+
+proc loadoutShowHide*(settings: Settings) =
+  let 
+    (mx,my) = mouse()
+    showButton = Clickable(
+      x0: settings.loadoutX, y0: settings.loadoutY,
+      x1: settings.loadoutX + 10, y1: settings.loadoutY + 18)
+    hovering = isOverlapping(mx, my, showButton)
+
+  if hovering and mousebtnpr(0): settings.showLoadout = not settings.showLoadout
