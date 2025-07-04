@@ -7,8 +7,6 @@ const
   appName = "mxn"
 
 const 
-  gunslinger = 0
-  fencer = 1
   lerpSpeed = 0.2
   gridPxW = 32
   gridPxH = 32
@@ -48,6 +46,9 @@ proc gameInit() =
   loadSpritesheet 0, "bg.png", 130, 130
   loadSpritesheet 1, "units.png", 32, 32
   loadSpritesheet 2, "loadoutscreen.png", 130, 130
+  addUnit 0, 0
+  addUnit 1, 0
+  addUnit 2, 1
 
 proc drawGrid =
   setColor 4
