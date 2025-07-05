@@ -1,17 +1,20 @@
 import nico
 import fixedGrid
 import unit, settingsHandler
+import turnController
 
 const 
   orgName = "pixelsane"
   appName = "microwar"
  
-var settings = Settings(
-  showLoadout: false,
-  loadoutX: 120,
-  loadoutY: 22,
-  placingUnit: false,
-  unitToPlace: -1)
+var 
+  phase : TurnState = Begin
+  settings = Settings(
+    showLoadout: false,
+    loadoutX: 120,
+    loadoutY: 22,
+    placingUnit: false,
+    unitToPlace: -1)
 
 proc resetUnitEvents =
   unselectUnit()
@@ -62,7 +65,6 @@ proc gameInit() =
   loadSpritesheet 2, "loadoutscreen.png", 130, 130
   prepareGrid Player1
   resetBattleField()
-  echo $getGridMap()
   addUnit 0, 0
   addUnit 1, 0
   addUnit 2, 1
@@ -106,10 +108,24 @@ proc drawScreen =
   drawLoadoutUnits settings
   drawUnitCursor settings
 
+proc resolveEventListen =
+  if resolveBtnPr(settings): 
+    settings.showLoadout = false
+    phase = Resolve
+
 proc gameUpdate(dt: float32) =
   storeCellUnderMouse settings
-  updateLoadout()
-  placeUnit()
+  case phase
+  of Begin:
+    resolveEventListen()
+    updateLoadout()
+    placeUnit()
+  of Resolve:
+    resolveActions()
+    phase = End
+  else:
+    echo "End Phase"
+    phase = Begin
 
 proc gameDraw() =
   cls()

@@ -1,6 +1,8 @@
 import nico
 import std/tables
 import settingsHandler
+import turnController 
+import fixedGrid
 
 type
   Unit* = object
@@ -9,14 +11,15 @@ type
     sprID*: int32
     ownerID*: int32
     selected*: bool
+    actionStack*: seq[Action]
 
 const
   GunslingerID* = 0
   FencerID*     = 1
 
 let unitTemplates* = @[
-  Unit(health: 100.0, cost: 5, sprID: 0, ownerID: -1),  # Gunslinger
-  Unit(health: 100.0, cost: 5, sprID: 1, ownerID: -1)   # Fencer
+  Unit(health: 100.0, cost: 5, sprID: 0, ownerID: -1, actionStack: @[]),  # Gunslinger
+  Unit(health: 100.0, cost: 5, sprID: 1, ownerID: -1, actionStack: @[moveAction(North)])   # Fencer
 ]
 
 var pool: Table[int32, Unit] = initTable[int32, Unit]()
@@ -98,7 +101,6 @@ proc unselectUnit* =
       pool[id].ownerID = -1
       pool[id].selected = false
 
-
 proc selectedUnit*: int =
   for id, unit in pool:
     if unit.selected:
@@ -119,3 +121,32 @@ proc loadoutShowHide*(settings: Settings) =
     hovering = isOverlapping(mx, my, showButton)
 
   if hovering and mousebtnpr(0): settings.showLoadout = not settings.showLoadout
+
+# ACTIONS / TURN COMBAT
+proc getActionStack(index: int32) : seq[Action]=
+  if occupant(index) notin pool: return
+  let
+    unitID = occupant(index)
+    unit = unitByID(unitID)
+  
+  return unit.actionStack
+
+proc resolveMovement*(index: int32) =
+  let actionStack = getActionStack(index)
+  if actionStack.len <= 0: return
+
+  let head = actionStack[0]
+  if head.actionType == Move:
+    case head.direction
+    of North:
+      if occupant(cellAbove index) <= -1:
+        discard moveOccupantUpByIndex(index, EmptyID)
+      else:
+        echo "Can't move up dumbass idiot"
+    else:
+      discard "implement for later"
+
+proc resolveActions* =
+  for i in 0 ..< MaxCells:
+    #resolveAttack i
+    resolveMovement i

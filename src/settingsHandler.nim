@@ -72,3 +72,16 @@ proc drawLoadoutScreen*(s: Settings) =
 
   setSpritesheet 2
   spr 0, s.loadoutX, 0
+
+
+proc resolveBtnPr*(settings: Settings) : bool =
+  let 
+    (mx,my) = mouse()
+    y = settings.loadoutY + 19
+    showButton = Clickable(
+      x0: settings.loadoutX, y0: y,
+      x1: settings.loadoutX + 10, y1: y + 18)
+    hovering = isOverlapping(mx, my, showButton)
+
+  if hovering and mousebtnpr(0): return true
+  return false
