@@ -5,6 +5,7 @@ import settingsHandler
 type
   Unit* = object
     health*: float32
+    cost*: int32
     sprID*: int32
     ownerID*: int32
     selected*: bool
@@ -14,8 +15,8 @@ const
   FencerID*     = 1
 
 let unitTemplates* = @[
-  Unit(health: 100.0, sprID: 0, ownerID: -1),  # Gunslinger
-  Unit(health: 100.0, sprID: 1, ownerID: -1)   # Fencer
+  Unit(health: 100.0, cost: 5, sprID: 0, ownerID: -1),  # Gunslinger
+  Unit(health: 100.0, cost: 5, sprID: 1, ownerID: -1)   # Fencer
 ]
 
 var pool: Table[int32, Unit] = initTable[int32, Unit]()

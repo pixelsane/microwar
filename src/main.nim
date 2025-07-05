@@ -22,10 +22,10 @@ proc resetUnitEvents =
 proc placeUnit*() =
   if settings.unitToPlace < 0: return
   if settings.placingUnit and settings.loadoutX > 118 and mousebtnpr(0) and not(settings.showLoadout):
-    if occupant(settings.hoveringOnCell) > -1: return
-    
+    if occupant(settings.hoveringOnCell) > -1 or kind(settings.hoveringOnCell) != Player1: return
+
     changeOccupantByIndex settings.unitToPlace, settings.hoveringOnCell
-    
+
     resetUnitEvents()
     settings.showLoadout = true
 
@@ -44,6 +44,12 @@ proc drawGridUnits*() =
       spr unit.sprID, pos.x0, pos.y0
 
 
+proc resetBattleField =
+  clearColumn 0, Player2
+  clearColumn 1, Player2
+  clearColumn 2, Player1
+  clearColumn 3, Player1
+
 proc updateLoadout =
   loadoutShowHide settings
   loadoutSelection settings
@@ -54,7 +60,9 @@ proc gameInit() =
   loadSpritesheet 0, "bg.png", 130, 130
   loadSpritesheet 1, "units.png", 32, 32
   loadSpritesheet 2, "loadoutscreen.png", 130, 130
-  prepareGrid Land
+  prepareGrid Player1
+  resetBattleField()
+  echo $getGridMap()
   addUnit 0, 0
   addUnit 1, 0
   addUnit 2, 1
@@ -75,9 +83,15 @@ proc drawGrid =
 
     rrect x, y, gridPxW + x, gridPxH + y, roundness
 
-    if settings.placingUnit and isOverlapping(mx, my, button):
+    if settings.placingUnit and kind(i) != Player1:
       hideMouse()
-      rrectFill x, y, gridPxW + x - 0.5, gridPxH + y, roundness
+      setColor 2
+      rrectFill x, y, gridPxW + x, gridPxH + y, roundness
+      setColor 4
+    elif settings.placingUnit and isOverlapping(mx, my, button):
+      setColor 4
+      hideMouse()
+      rrectFill x, y, gridPxW + x, gridPxH + y, roundness
 
 proc drawBG =
   setSpritesheet 0

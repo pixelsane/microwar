@@ -9,11 +9,12 @@ const
 # Add or remove types according to need
 type 
   CellKind* = enum
-    Land
+    Player1
+    Player2
 
   ID* = int
 
-  Cell* = object
+  Cell* = object 
     kind: CellKind
     occupant: ID
 
@@ -94,7 +95,11 @@ proc isOutOfBounds*(x:int, y:int) : bool =
   else:
     result = false
 
-proc clearColumn*(target: int, clearKind = Land) =
-  for i in 0..GridWidth:
-    changeKind clearKind, i, target
-    changeOccupant EmptyID, i, target
+proc clearColumn*(row: int, clearKind: CellKind) =
+  let
+    startingColumn = row * GridWidth
+    endingColumn = (row * GridWidth) + GridWidth
+
+  for i in startingColumn ..< endingColumn:
+    changeKindByIndex clearKind, i
+    changeOccupantByIndex EmptyID, i
